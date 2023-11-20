@@ -150,22 +150,105 @@
 		};
 	};
 
+	idle-states {
+		CPU_PWRDN: cpu-power-down {
+			compatible = "arm,idle-state";
+			idle-state-name = "retention";
+			arm,psci-suspend-param = <0x00000001>;
+			/* TODO: set correct TIMING */
+			entry-latency-us = <10>;
+			exit-latency-us = <10>;
+			min-residency-us = <100>;
+		};
+	};
+
+	domain-idle-states {
+		STOP1: stop1 {
+			compatible = "domain-idle-state";
+			idle-state-name = "Stop1";
+			arm,psci-suspend-param = <0x00000011>;
+			local-timer-stop;
+			/* TODO: set correct TIMING */
+			entry-latency-us = <20>;
+			exit-latency-us = <20>;
+			min-residency-us = <60>;
+		};
+
+		STOP2: stop2 {
+			compatible = "domain-idle-state";
+			idle-state-name = "Stop2";
+			arm,psci-suspend-param = <0x40001333>;
+			local-timer-stop;
+			/* TODO: set correct TIMING */
+			entry-latency-us = <100>;
+			exit-latency-us = <100>;
+			min-residency-us = <600>;
+		};
+
+		LP_STOP1: lp-stop1 {
+			compatible = "domain-idle-state";
+			idle-state-name = "LP-Stop1";
+			arm,psci-suspend-param = <0x0000021>;
+			local-timer-stop;
+			/* TODO: set correct TIMING */
+			entry-latency-us = <1000>;
+			exit-latency-us = <1000>;
+			min-residency-us = <3000>;
+		};
+
+		LP_STOP2: lp-stop2 {
+			compatible = "domain-idle-state";
+			idle-state-name = "LP-Stop2";
+			arm,psci-suspend-param = <0x40002333>;
+			local-timer-stop;
+			/* TODO: set correct TIMING */
+			entry-latency-us = <2000>;
+			exit-latency-us = <2000>;
+			min-residency-us = <6000>;
+		};
+
+		LPLV_STOP1: lplv-stop1 {
+			compatible = "domain-idle-state";
+			idle-state-name = "LPLV-Stop1";
+			arm,psci-suspend-param = <0x00000211>;
+			local-timer-stop;
+			/* TODO: set correct TIMING */
+			entry-latency-us = <2000>;
+			exit-latency-us = <2000>;
+			min-residency-us = <6000>;
+		};
+
+		LPLV_STOP2: lplv-stop2 {
+			compatible = "domain-idle-state";
+			idle-state-name = "LPLV-Stop2";
+			arm,psci-suspend-param = <0x40023333>;
+			local-timer-stop;
+			/* TODO: set correct TIMING */
+			entry-latency-us = <2000>;
+			exit-latency-us = <2000>;
+			min-residency-us = <6000>;
+		};
+	};
+
 	psci {
 		compatible = "arm,psci-1.0";
 		method = "smc";
 
 		CPU_PD0: power-domain-cpu0 {
 			#power-domain-cells = <0>;
+			domain-idle-states = <&CPU_PWRDN>;
 			power-domains = <&CLUSTER_PD>;
 		};
 
 		CLUSTER_PD: power-domain-cluster {
 			#power-domain-cells = <0>;
+			domain-idle-states = <&STOP1>, <&LP_STOP1>;
 			power-domains = <&RET_PD>;
 		};
 
 		RET_PD: power-domain-retention {
 			#power-domain-cells = <0>;
+			domain-idle-states = <&STOP1>, <&LP_STOP1>;
 		};
 	};
 
@@ -799,7 +882,7 @@
 				       <&hpdma 12 0x20 0x3021 0x0>;
 				dma-names = "rx", "tx";
 				feature-domains = <&rifsc STM32MP25_RIFSC_USART2_ID>;
-				power-domains = <&RET_PD>;
+				power-domains = <&CLUSTER_PD>;
 				status = "disabled";
 			};
 
@@ -812,7 +895,7 @@
 				       <&hpdma 14 0x20 0x3021 0x0>;
 				dma-names = "rx", "tx";
 				feature-domains = <&rifsc STM32MP25_RIFSC_USART3_ID>;
-				power-domains = <&RET_PD>;
+				power-domains = <&CLUSTER_PD>;
 				status = "disabled";
 			};
 
@@ -825,7 +908,7 @@
 				       <&hpdma 16 0x20 0x3021 0x0>;
 				dma-names = "rx", "tx";
 				feature-domains = <&rifsc STM32MP25_RIFSC_UART4_ID>;
-				power-domains = <&RET_PD>;
+				power-domains = <&CLUSTER_PD>;
 				status = "disabled";
 			};
 
@@ -838,7 +921,7 @@
 				       <&hpdma 18 0x20 0x3021 0x0>;
 				dma-names = "rx", "tx";
 				feature-domains = <&rifsc STM32MP25_RIFSC_UART5_ID>;
-				power-domains = <&RET_PD>;
+				power-domains = <&CLUSTER_PD>;
 				status = "disabled";
 			};
 
@@ -1135,7 +1218,7 @@
 				       <&hpdma 20 0x20 0x3021 0x0>;
 				dma-names = "rx", "tx";
 				feature-domains = <&rifsc STM32MP25_RIFSC_USART6_ID>;
-				power-domains = <&RET_PD>;
+				power-domains = <&CLUSTER_PD>;
 				status = "disabled";
 			};
 
@@ -1408,6 +1491,7 @@
 				       <&hpdma 26 0x20 0x3021 0x0>;
 				dma-names = "rx", "tx";
 				feature-domains = <&rifsc STM32MP25_RIFSC_UART9_ID>;
+				power-domains = <&CLUSTER_PD>;
 				status = "disabled";
 			};
 
@@ -1454,7 +1538,7 @@
 				       <&hpdma 10 0x20 0x3021 0x0>;
 				dma-names = "rx", "tx";
 				feature-domains = <&rifsc STM32MP25_RIFSC_USART1_ID>;
-				power-domains = <&RET_PD>;
+				power-domains = <&CLUSTER_PD>;
 				status = "disabled";
 			};
 
@@ -1534,6 +1618,7 @@
 				       <&hpdma 22 0x20 0x3021 0x0>;
 				dma-names = "rx", "tx";
 				feature-domains = <&rifsc STM32MP25_RIFSC_UART7_ID>;
+				power-domains = <&CLUSTER_PD>;
 				status = "disabled";
 			};
 
@@ -1546,6 +1631,7 @@
 				       <&hpdma 24 0x20 0x3021 0x0>;
 				dma-names = "rx", "tx";
 				feature-domains = <&rifsc STM32MP25_RIFSC_UART8_ID>;
+				power-domains = <&CLUSTER_PD>;
 				status = "disabled";
 			};
 
