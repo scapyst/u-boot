@@ -161,7 +161,7 @@ enum forced_boot_mode {
 
 #define STM32_DDR_BASE			0x80000000
 
-#define STM32_DDR_SIZE			SZ_2G
+#define STM32_DDR_SIZE			SZ_4G
 
 /* TAMP registers x = 0 to 127 : hardcoded description, waiting NVMEM node in DT */
 #define TAMP_BACKUP_REGISTER(x)		(STM32_TAMP_BASE + 0x100 + 4 * (x))
