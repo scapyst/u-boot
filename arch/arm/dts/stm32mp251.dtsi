@@ -28,6 +28,86 @@
 			power-domains = <&CPU_PD0>;
 			power-domain-names = "psci";
 		};
+
+		idle-states {
+			CPU_PWRDN: cpu-power-down {
+				compatible = "arm,idle-state";
+				idle-state-name = "retention";
+				arm,psci-suspend-param = <0x00000001>;
+				/* TODO: set correct TIMING */
+				entry-latency-us = <10>;
+				exit-latency-us = <10>;
+				min-residency-us = <100>;
+			};
+		};
+
+		domain-idle-states {
+			STOP1: stop1 {
+				compatible = "domain-idle-state";
+				idle-state-name = "Stop1";
+				arm,psci-suspend-param = <0x00000011>;
+				local-timer-stop;
+				/* TODO: set correct TIMING */
+				entry-latency-us = <20>;
+				exit-latency-us = <20>;
+				min-residency-us = <60>;
+			};
+
+			STOP2: stop2 {
+				compatible = "domain-idle-state";
+				idle-state-name = "Stop2";
+				arm,psci-suspend-param = <0x40001333>;
+				local-timer-stop;
+				/* TODO: set correct TIMING */
+				entry-latency-us = <100>;
+				exit-latency-us = <100>;
+				min-residency-us = <600>;
+			};
+
+			LP_STOP1: lp-stop1 {
+				compatible = "domain-idle-state";
+				idle-state-name = "LP-Stop1";
+				arm,psci-suspend-param = <0x0000021>;
+				local-timer-stop;
+				/* TODO: set correct TIMING */
+				entry-latency-us = <1000>;
+				exit-latency-us = <1000>;
+				min-residency-us = <3000>;
+			};
+
+			LP_STOP2: lp-stop2 {
+				compatible = "domain-idle-state";
+				idle-state-name = "LP-Stop2";
+				arm,psci-suspend-param = <0x40002333>;
+				local-timer-stop;
+				/* TODO: set correct TIMING */
+				entry-latency-us = <2000>;
+				exit-latency-us = <2000>;
+				min-residency-us = <6000>;
+			};
+
+			LPLV_STOP1: lplv-stop1 {
+				compatible = "domain-idle-state";
+				idle-state-name = "LPLV-Stop1";
+				arm,psci-suspend-param = <0x00000211>;
+				local-timer-stop;
+				/* TODO: set correct TIMING */
+				entry-latency-us = <2000>;
+				exit-latency-us = <2000>;
+				min-residency-us = <6000>;
+			};
+
+			LPLV_STOP2: lplv-stop2 {
+				compatible = "domain-idle-state";
+				idle-state-name = "LPLV-Stop2";
+				arm,psci-suspend-param = <0x40023333>;
+				local-timer-stop;
+				/* TODO: set correct TIMING */
+				entry-latency-us = <2000>;
+				exit-latency-us = <2000>;
+				min-residency-us = <6000>;
+			};
+		};
 	};
 
 	arm-pmu {
@@ -52,9 +132,13 @@
 	};
 
 	firmware {
-		optee {
+		optee: optee {
 			compatible = "linaro,optee-tz";
 			method = "smc";
+			interrupt-parent = <&intc>;
+			interrupts = <GIC_PPI 15 (GIC_CPU_MASK_SIMPLE(1) | IRQ_TYPE_LEVEL_LOW)>;
+			interrupt-controller;
+			#interrupt-cells = <1>;
 		};
 
 		scmi: scmi {
@@ -150,86 +234,6 @@
 		};
 	};
 
-	idle-states {
-		CPU_PWRDN: cpu-power-down {
-			compatible = "arm,idle-state";
-			idle-state-name = "retention";
-			arm,psci-suspend-param = <0x00000001>;
-			/* TODO: set correct TIMING */
-			entry-latency-us = <10>;
-			exit-latency-us = <10>;
-			min-residency-us = <100>;
-		};
-	};
-
-	domain-idle-states {
-		STOP1: stop1 {
-			compatible = "domain-idle-state";
-			idle-state-name = "Stop1";
-			arm,psci-suspend-param = <0x00000011>;
-			local-timer-stop;
-			/* TODO: set correct TIMING */
-			entry-latency-us = <20>;
-			exit-latency-us = <20>;
-			min-residency-us = <60>;
-		};
-
-		STOP2: stop2 {
-			compatible = "domain-idle-state";
-			idle-state-name = "Stop2";
-			arm,psci-suspend-param = <0x40001333>;
-			local-timer-stop;
-			/* TODO: set correct TIMING */
-			entry-latency-us = <100>;
-			exit-latency-us = <100>;
-			min-residency-us = <600>;
-		};
-
-		LP_STOP1: lp-stop1 {
-			compatible = "domain-idle-state";
-			idle-state-name = "LP-Stop1";
-			arm,psci-suspend-param = <0x0000021>;
-			local-timer-stop;
-			/* TODO: set correct TIMING */
-			entry-latency-us = <1000>;
-			exit-latency-us = <1000>;
-			min-residency-us = <3000>;
-		};
-
-		LP_STOP2: lp-stop2 {
-			compatible = "domain-idle-state";
-			idle-state-name = "LP-Stop2";
-			arm,psci-suspend-param = <0x40002333>;
-			local-timer-stop;
-			/* TODO: set correct TIMING */
-			entry-latency-us = <2000>;
-			exit-latency-us = <2000>;
-			min-residency-us = <6000>;
-		};
-
-		LPLV_STOP1: lplv-stop1 {
-			compatible = "domain-idle-state";
-			idle-state-name = "LPLV-Stop1";
-			arm,psci-suspend-param = <0x00000211>;
-			local-timer-stop;
-			/* TODO: set correct TIMING */
-			entry-latency-us = <2000>;
-			exit-latency-us = <2000>;
-			min-residency-us = <6000>;
-		};
-
-		LPLV_STOP2: lplv-stop2 {
-			compatible = "domain-idle-state";
-			idle-state-name = "LPLV-Stop2";
-			arm,psci-suspend-param = <0x40023333>;
-			local-timer-stop;
-			/* TODO: set correct TIMING */
-			entry-latency-us = <2000>;
-			exit-latency-us = <2000>;
-			min-residency-us = <6000>;
-		};
-	};
-
 	psci {
 		compatible = "arm,psci-1.0";
 		method = "smc";
@@ -289,7 +293,7 @@
 			     <GIC_PPI 14 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
 			     <GIC_PPI 11 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
 			     <GIC_PPI 10 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>;
-		always-on;
+		arm,no-tick-in-suspend;
 	};
 
 	usb2_phy1: usb2-phy1 {
@@ -728,13 +732,14 @@
 			lptimer1: timer@40090000 {
 				compatible = "st,stm32mp25-lptimer";
 				reg = <0x40090000 0x400>;
-				interrupts = <GIC_SPI 166 IRQ_TYPE_LEVEL_HIGH>;
+				interrupts-extended = <&exti1 47 IRQ_TYPE_LEVEL_HIGH>;
 				clocks = <&rcc CK_KER_LPTIM1>;
 				clock-names = "mux";
 				#address-cells = <1>;
 				#size-cells = <0>;
 				feature-domains = <&rifsc STM32MP25_RIFSC_LPTIM1_ID>;
 				power-domains = <&RET_PD>;
+				wakeup-source;
 				status = "disabled";
 
 				counter {
@@ -763,13 +768,14 @@
 			lptimer2: timer@400a0000 {
 				compatible = "st,stm32mp25-lptimer";
 				reg = <0x400a0000 0x400>;
-				interrupts = <GIC_SPI 215 IRQ_TYPE_LEVEL_HIGH>;
+				interrupts-extended = <&exti1 48 IRQ_TYPE_LEVEL_HIGH>;
 				clocks = <&rcc CK_KER_LPTIM2>;
 				clock-names = "mux";
 				#address-cells = <1>;
 				#size-cells = <0>;
 				feature-domains = <&rifsc STM32MP25_RIFSC_LPTIM2_ID>;
 				power-domains = <&RET_PD>;
+				wakeup-source;
 				status = "disabled";
 
 				counter {
@@ -1398,6 +1404,7 @@
 					clocks = <&rcc CK_KER_SAI1>;
 					clock-names = "sai_ck";
 					dmas = <&hpdma 73 0x43 0x21 0>;
+					power-domains = <&CLUSTER_PD>;
 					status = "disabled";
 				};
 
@@ -1408,6 +1415,7 @@
 					clocks = <&rcc CK_KER_SAI1>;
 					clock-names = "sai_ck";
 					dmas = <&hpdma 74 0x43 0x12 0>;
+					power-domains = <&CLUSTER_PD>;
 					status = "disabled";
 				};
 			};
@@ -1433,6 +1441,7 @@
 					clocks = <&rcc CK_KER_SAI2>;
 					clock-names = "sai_ck";
 					dmas = <&hpdma 75 0x43 0x21 0>;
+					power-domains = <&CLUSTER_PD>;
 					status = "disabled";
 				};
 
@@ -1443,6 +1452,7 @@
 					clocks = <&rcc CK_KER_SAI2>;
 					clock-names = "sai_ck";
 					dmas = <&hpdma 76 0x43 0x12 0>;
+					power-domains = <&CLUSTER_PD>;
 					status = "disabled";
 				};
 			};
@@ -1468,6 +1478,7 @@
 					clocks = <&rcc CK_KER_SAI3>;
 					clock-names = "sai_ck";
 					dmas = <&hpdma 77 0x43 0x21 0>;
+					power-domains = <&CLUSTER_PD>;
 					status = "disabled";
 				};
 
@@ -1478,6 +1489,7 @@
 					clocks = <&rcc CK_KER_SAI3>;
 					clock-names = "sai_ck";
 					dmas = <&hpdma 78 0x43 0x12 0>;
+					power-domains = <&CLUSTER_PD>;
 					status = "disabled";
 				};
 			};
@@ -1563,6 +1575,7 @@
 					clocks = <&rcc CK_KER_SAI4>;
 					clock-names = "sai_ck";
 					dmas = <&hpdma 79 0x63 0x21 0>;
+					power-domains = <&CLUSTER_PD>;
 					status = "disabled";
 				};
 
@@ -1573,6 +1586,7 @@
 					clocks = <&rcc CK_KER_SAI4>;
 					clock-names = "sai_ck";
 					dmas = <&hpdma 80 0x43 0x12 0>;
+					power-domains = <&CLUSTER_PD>;
 					status = "disabled";
 				};
 			};
@@ -1731,6 +1745,7 @@
 				resets = <&rcc MDF1_R>;
 				reset-names = "mdf";
 				feature-domains = <&rifsc STM32MP25_RIFSC_MDF1_ID>;
+				power-domains = <&RET_PD>;
 				status = "disabled";
 
 				sitf0: sitf@80 {
@@ -1964,12 +1979,13 @@
 			lptimer3: timer@46050000 {
 				compatible = "st,stm32mp25-lptimer";
 				reg = <0x46050000 0x400>;
-				interrupts = <GIC_SPI 216 IRQ_TYPE_LEVEL_HIGH>;
+				interrupts-extended = <&exti2 29 IRQ_TYPE_LEVEL_HIGH>;
 				clocks = <&rcc CK_KER_LPTIM3>;
 				clock-names = "mux";
 				#address-cells = <1>;
 				#size-cells = <0>;
 				feature-domains = <&rifsc STM32MP25_RIFSC_LPTIM3_ID>;
+				wakeup-source;
 				status = "disabled";
 
 				counter {
@@ -1998,12 +2014,13 @@
 			lptimer4: timer@46060000 {
 				compatible = "st,stm32mp25-lptimer";
 				reg = <0x46060000 0x400>;
-				interrupts = <GIC_SPI 217 IRQ_TYPE_LEVEL_HIGH>;
+				interrupts-extended = <&exti2 30 IRQ_TYPE_LEVEL_HIGH>;
 				clocks = <&rcc CK_KER_LPTIM4>;
 				clock-names = "mux";
 				#address-cells = <1>;
 				#size-cells = <0>;
 				feature-domains = <&rifsc STM32MP25_RIFSC_LPTIM4_ID>;
+				wakeup-source;
 				status = "disabled";
 
 				counter {
@@ -2032,12 +2049,13 @@
 			lptimer5: timer@46070000 {
 				compatible = "st,stm32mp25-lptimer";
 				reg = <0x46070000 0x400>;
-				interrupts = <GIC_SPI 218 IRQ_TYPE_LEVEL_HIGH>;
+				interrupts-extended = <&exti2 31 IRQ_TYPE_LEVEL_HIGH>;
 				clocks = <&rcc CK_KER_LPTIM5>;
 				clock-names = "mux";
 				#address-cells = <1>;
 				#size-cells = <0>;
 				feature-domains = <&rifsc STM32MP25_RIFSC_LPTIM5_ID>;
+				wakeup-source;
 				status = "disabled";
 
 				counter {
@@ -2798,10 +2816,9 @@
 			};
 		};
 
-		a35ssc_m33: syscon@488020a0 {
-			compatible = "st,stm32mp25-a35ssc-m33", "syscon";
-			reg = <0x488020a0 0x0c>;
-			clocks = <&scmi_clk CK_SCMI_SYSCPU1>;
+		a35ss_syscfg: syscon@48802000  {
+			compatible = "st,stm32mp25-a35ss-syscfg", "syscon";
+			reg = <48802000  0xac>;
 			status = "disabled";
 		};
 	};

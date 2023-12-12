@@ -120,7 +120,6 @@
 		};
 	};
 
-
 	eth2_rgmii_pins_a: eth2-rgmii-0 {
 		pins1 {
 			pinmux = <STM32_PINMUX('C', 7, AF10)>, /* ETH_RGMII_TXD0 */
@@ -247,6 +246,13 @@
 		};
 	};
 
+	i2c2_sleep_pins_a: i2c2-sleep-0 {
+		pins {
+			pinmux = <STM32_PINMUX('B', 5, ANALOG)>, /* I2C2_SCL */
+				 <STM32_PINMUX('B', 4, ANALOG)>; /* I2C2_SDA */
+		};
+	};
+
 	i2c2_pins_b: i2c2-1 {
 		pins {
 			pinmux = <STM32_PINMUX('F', 2, AF9)>, /* I2C2_SCL */
@@ -254,13 +260,6 @@
 			bias-disable;
 			drive-open-drain;
 			slew-rate = <0>;
-		};
-	};
-
-	i2c2_sleep_pins_a: i2c2-sleep-0 {
-		pins {
-			pinmux = <STM32_PINMUX('B', 5, ANALOG)>, /* I2C2_SCL */
-				 <STM32_PINMUX('B', 4, ANALOG)>; /* I2C2_SDA */
 		};
 	};
 
@@ -441,6 +440,12 @@
 		pins {
 			pinmux = <STM32_PINMUX('J', 0, GPIO)>;
 			output-low;
+		};
+	};
+
+	pcie_sleep_pins_a: pcie-sleep-0 {
+		pins {
+			pinmux = <STM32_PINMUX('J', 0, ANALOG)>;
 		};
 	};
 
