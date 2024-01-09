@@ -35,7 +35,6 @@
 
 		framebuffer {
 			compatible = "simple-framebuffer";
-			clocks = <&rcc CK_BUS_LTDC>;
 			status = "disabled";
 		};
 	};
@@ -123,7 +122,7 @@
 		compatible = "edt,etml0700z9ndha", "panel-lvds";
 		enable-gpios = <&gpioi 4 GPIO_ACTIVE_HIGH>;
 		backlight = <&panel_lvds_backlight>;
-		status = "disabled";
+		status = "okay";
 
 		width-mm = <156>;
 		height-mm = <92>;
@@ -215,7 +214,7 @@
 };
 
 &dsi {
-	status = "disabled";
+	status = "okay";
 
 	ports {
 		#address-cells = <1>;
@@ -429,7 +428,7 @@
 };
 
 &ltdc {
-	status = "disabled";
+	status = "okay";
 
 	port {
 		#address-cells = <1>;
@@ -448,7 +447,7 @@
 };
 
 &lvds {
-	status = "disabled";
+	status = "okay";
 	backlight = <&panel_lvds_backlight>;
 	ports {
 		#address-cells = <1>;
