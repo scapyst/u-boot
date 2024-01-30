@@ -35,7 +35,8 @@
 
 		framebuffer {
 			compatible = "simple-framebuffer";
-			clocks = <&rcc CK_BUS_LTDC>;
+			clocks = <&rcc CK_BUS_LTDC>, <&rcc CK_KER_LTDC>,
+				 <&rcc CK_BUS_LVDS>, <&rcc CK_KER_LVDSPHY>;
 			status = "disabled";
 		};
 	};
@@ -61,7 +62,6 @@
 			label = "User-1";
 			linux,code = <BTN_1>;
 			gpios = <&gpiod 2 GPIO_ACTIVE_HIGH>;
-			wakeup-source;
 			status = "okay";
 		};
 	};
@@ -93,14 +93,6 @@
 	memory@80000000 {
 		device_type = "memory";
 		reg = <0x0 0x80000000 0x1 0x0>;
-	};
-
-	panel_dsi_backlight: panel-dsi-backlight {
-		compatible = "gpio-backlight";
-		gpios = <&gpioi 5 GPIO_ACTIVE_LOW>;
-		default-on;
-		default-brightness-level = <0>;
-		status = "disabled";
 	};
 
 	panel_lvds: panel-lvds {
@@ -136,7 +128,7 @@
 		compatible = "gpio-backlight";
 		gpios = <&gpioi 5 GPIO_ACTIVE_HIGH>;
 		default-on;
-		default-brightness-level = <0>;
+		default-brightness-level = <1>;
 		status = "okay";
 	};
 
@@ -204,6 +196,8 @@
 };
 
 &dsi {
+	phy-dsi-supply =  <&scmi_vddcore>;
+	vdda18-supply = <&scmi_v1v8>;
 	status = "disabled";
 
 	ports {
@@ -330,12 +324,12 @@
 		status = "disabled";
 		adi,dsi-lanes = <4>;
 		reset-gpios = <&gpiog 14 GPIO_ACTIVE_LOW>;
-		avdd-supply = <&scmi_v3v3>;
-		dvdd-supply = <&scmi_v3v3>;
-		pvdd-supply = <&scmi_v3v3>;
-		a2vdd-supply = <&scmi_v3v3>;
+		avdd-supply = <&scmi_v1v8>;
+		dvdd-supply = <&scmi_v1v8>;
+		pvdd-supply = <&scmi_v1v8>;
+		a2vdd-supply = <&scmi_v1v8>;
 		v3p3-supply = <&scmi_v3v3>;
-		v1p2-supply = <&scmi_v3v3>;
+		v1p2-supply = <&scmi_v1v8>;
 
 		ports {
 			#address-cells = <1>;
@@ -415,6 +409,7 @@
 };
 
 &ltdc {
+	default-on;
 	rotation-memory = <&ltdc_sec_rotation>;
 	status = "okay";
 
@@ -435,6 +430,9 @@
 };
 
 &lvds {
+	default-on;
+	vdd-supply =  <&scmi_vddcore>;
+	vdda18-supply = <&scmi_v1v8>;
 	status = "okay";
 
 	ports {
@@ -571,6 +569,14 @@
 	scmi_vddio1: regulator@0 {
 		regulator-min-microvolt = <1800000>;
 		regulator-max-microvolt = <3300000>;
+	};
+	scmi_vddcore: regulator@11  {
+		reg = <VOLTD_SCMI_STPMIC2_BUCK2>;
+		regulator-name = "vddcore";
+	};
+	scmi_v1v8: regulator@14  {
+		reg = <VOLTD_SCMI_STPMIC2_BUCK5>;
+		regulator-name = "v1v8";
 	};
 	scmi_v3v3: regulator@16 {
 		reg = <VOLTD_SCMI_STPMIC2_BUCK7>;
