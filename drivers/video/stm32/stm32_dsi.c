@@ -974,30 +974,47 @@ static int stm32_dsi_probe(struct udevice *dev)
 		return -EINVAL;
 	}
 
-	ret =  device_get_supply_regulator(dev, "phy-dsi-supply",
-					   &priv->vdd_reg);
-	if (ret && ret != -ENOENT) {
-		dev_err(dev, "Warning: cannot get phy dsi supply\n");
-		return -ENODEV;
+	if (device_is_compatible(dev, "st,stm32-dsi")) {
+		ret =  device_get_supply_regulator(dev, "phy-dsi-supply",
+						   &priv->vdd_reg);
+		if (ret && ret != -ENOENT) {
+			dev_err(dev, "Warning: cannot get phy dsi supply\n");
+			return -ENODEV;
+		}
+
+		if (ret != -ENOENT) {
+			ret = regulator_set_enable(priv->vdd_reg, true);
+			if (ret)
+				return ret;
+		}
 	}
 
-	if (ret != -ENOENT) {
-		ret = regulator_set_enable(priv->vdd_reg, true);
-		if (ret)
+	if (device_is_compatible(dev, "st,stm32mp25-dsi")) {
+		ret =  device_get_supply_regulator(dev, "vdd-supply",
+						   &priv->vdd_reg);
+		if (ret && ret != -ENOENT) {
+			dev_err(dev, "Warning: cannot get phy dsi supply\n");
+			return -ENODEV;
+		}
+
+		if (ret != -ENOENT) {
+			ret = regulator_set_enable(priv->vdd_reg, true);
+			if (ret)
+				return ret;
+		}
+
+		ret =  device_get_supply_regulator(dev, "vdda18",
+						   &priv->vdda18_reg);
+		if (ret && ret != -ENOENT) {
+			dev_err(dev, "Warning: cannot get vdda18 supply\n");
 			return ret;
-	}
+		}
 
-	ret =  device_get_supply_regulator(dev, "vdda18",
-					   &priv->vdda18_reg);
-	if (ret && ret != -ENOENT) {
-		dev_err(dev, "Warning: cannot get vdda18 supply\n");
-		return ret;
-	}
-
-	if (ret != -ENOENT) {
-		ret = regulator_set_enable(priv->vdda18_reg, true);
-		if (ret)
-			return ret;
+		if (ret != -ENOENT) {
+			ret = regulator_set_enable(priv->vdda18_reg, true);
+			if (ret)
+				return ret;
+		}
 	}
 
 	ret = clk_get_by_name(device->dev, "pclk", &clk);
@@ -1059,6 +1076,7 @@ struct video_bridge_ops stm32_dsi_ops = {
 
 static const struct udevice_id stm32_dsi_ids[] = {
 	{ .compatible = "st,stm32-dsi"},
+	{ .compatible = "st,stm32mp25-dsi"},
 	{ }
 };
 
