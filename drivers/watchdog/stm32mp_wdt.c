@@ -79,10 +79,10 @@ static int stm32mp_wdt_start(struct udevice *dev, u64 timeout_ms, ulong flags)
 
 	/* Wait for the registers to be updated */
 	ret = readl_poll_timeout(priv->base + IWDG_SR, val,
-				 val & (SR_PVU | SR_RVU), CONFIG_SYS_HZ);
+				 !(val & (SR_PVU | SR_RVU)), CONFIG_SYS_HZ);
 
 	if (ret < 0) {
-		dev_err(dev, "Updating IWDG registers timeout");
+		dev_err(dev, "Updating IWDG registers timeout\n");
 		return -ETIMEDOUT;
 	}
 
