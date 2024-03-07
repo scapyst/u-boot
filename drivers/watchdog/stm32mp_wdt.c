@@ -86,6 +86,9 @@ static int stm32mp_wdt_start(struct udevice *dev, u64 timeout_ms, ulong flags)
 		return -ETIMEDOUT;
 	}
 
+	/* Reload watchdog */
+	writel(KR_KEY_RELOAD, priv->base + IWDG_KR);
+
 	return 0;
 }
 
