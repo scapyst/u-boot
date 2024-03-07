@@ -16,6 +16,8 @@
 #include <linux/bitops.h>
 #include <linux/iopoll.h>
 
+#define MSEC_PER_SEC	1000
+
 /* IWDG registers */
 #define IWDG_KR		0x00	/* Key register */
 #define IWDG_PR		0x04	/* Prescaler Register */
@@ -59,7 +61,7 @@ static int stm32mp_wdt_start(struct udevice *dev, u64 timeout_ms, ulong flags)
 	int ret;
 
 	/* Prescaler fixed to 256 */
-	reload = timeout_ms * priv->wdt_clk_rate / 256;
+	reload = timeout_ms * priv->wdt_clk_rate / (256 * MSEC_PER_SEC);
 	if (reload > RLR_MAX + 1)
 		/* Force to max watchdog counter reload value */
 		reload = RLR_MAX + 1;
