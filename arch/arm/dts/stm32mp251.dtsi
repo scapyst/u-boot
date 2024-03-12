@@ -53,15 +53,6 @@
 				min-residency-us = <60>;
 			};
 
-			STOP2: domain-stop2 {
-				compatible = "domain-idle-state";
-				arm,psci-suspend-param = <0x40001333>;
-				/* TODO: set correct TIMING */
-				entry-latency-us = <100>;
-				exit-latency-us = <100>;
-				min-residency-us = <600>;
-			};
-
 			LP_STOP1: domain-lp-stop1 {
 				compatible = "domain-idle-state";
 				arm,psci-suspend-param = <0x0000021>;
@@ -71,27 +62,9 @@
 				min-residency-us = <3000>;
 			};
 
-			LP_STOP2: domain-lp-stop2 {
-				compatible = "domain-idle-state";
-				arm,psci-suspend-param = <0x40002333>;
-				/* TODO: set correct TIMING */
-				entry-latency-us = <2000>;
-				exit-latency-us = <2000>;
-				min-residency-us = <6000>;
-			};
-
 			LPLV_STOP1: domain-lplv-stop1 {
 				compatible = "domain-idle-state";
 				arm,psci-suspend-param = <0x00000211>;
-				/* TODO: set correct TIMING */
-				entry-latency-us = <2000>;
-				exit-latency-us = <2000>;
-				min-residency-us = <6000>;
-			};
-
-			LPLV_STOP2: domain-lplv-stop2 {
-				compatible = "domain-idle-state";
-				arm,psci-suspend-param = <0x40023333>;
 				/* TODO: set correct TIMING */
 				entry-latency-us = <2000>;
 				exit-latency-us = <2000>;
@@ -237,7 +210,7 @@
 
 		RET_PD: power-domain-retention {
 			#power-domain-cells = <0>;
-			domain-idle-states = <&STOP1>, <&LP_STOP1>;
+			domain-idle-states = <&LPLV_STOP1>;
 		};
 	};
 
@@ -274,16 +247,17 @@
 	timer {
 		compatible = "arm,armv8-timer";
 		interrupt-parent = <&intc>;
-		interrupts = <GIC_PPI 13 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
-			     <GIC_PPI 14 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
-			     <GIC_PPI 11 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
-			     <GIC_PPI 10 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>;
+		interrupts = <GIC_PPI 13 (GIC_CPU_MASK_SIMPLE(1) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI 14 (GIC_CPU_MASK_SIMPLE(1) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI 11 (GIC_CPU_MASK_SIMPLE(1) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI 10 (GIC_CPU_MASK_SIMPLE(1) | IRQ_TYPE_LEVEL_LOW)>;
 		arm,no-tick-in-suspend;
 	};
 
 	usb2_phy1: usb2-phy1 {
 		compatible      = "st,stm32mp25-usb2phy";
 		#phy-cells      = <0>;
+		#clock-cells    = <0>;
 		st,syscfg       = <&syscfg 0x2400>;
 		clocks          = <&rcc CK_KER_USB2PHY1>;
 		resets          = <&rcc USB2PHY1_R>;
@@ -293,6 +267,7 @@
 	usb2_phy2: usb2-phy2 {
 		compatible      = "st,stm32mp25-usb2phy";
 		#phy-cells      = <0>;
+		#clock-cells    = <0>;
 		st,syscfg       = <&syscfg 0x2800>;
 		clocks          = <&rcc CK_KER_USB2PHY2EN>;
 		resets          = <&rcc USB2PHY2_R>;
@@ -868,52 +843,56 @@
 			usart2: serial@400e0000 {
 				compatible = "st,stm32h7-uart";
 				reg = <0x400e0000 0x400>;
-				interrupts = <GIC_SPI 115 IRQ_TYPE_LEVEL_HIGH>;
+				interrupts-extended = <&exti1 27 IRQ_TYPE_LEVEL_HIGH>;
 				clocks = <&rcc CK_KER_USART2>;
 				dmas = <&hpdma 11 0x20 0x10012 0x0>,
 				       <&hpdma 12 0x20 0x3021 0x0>;
 				dma-names = "rx", "tx";
 				feature-domains = <&rifsc STM32MP25_RIFSC_USART2_ID>;
 				power-domains = <&CLUSTER_PD>;
+				wakeup-source;
 				status = "disabled";
 			};
 
 			usart3: serial@400f0000 {
 				compatible = "st,stm32h7-uart";
 				reg = <0x400f0000 0x400>;
-				interrupts = <GIC_SPI 116 IRQ_TYPE_LEVEL_HIGH>;
+				interrupts-extended = <&exti1 28 IRQ_TYPE_LEVEL_HIGH>;
 				clocks = <&rcc CK_KER_USART3>;
 				dmas = <&hpdma 13 0x20 0x10012 0x0>,
 				       <&hpdma 14 0x20 0x3021 0x0>;
 				dma-names = "rx", "tx";
 				feature-domains = <&rifsc STM32MP25_RIFSC_USART3_ID>;
 				power-domains = <&CLUSTER_PD>;
+				wakeup-source;
 				status = "disabled";
 			};
 
 			uart4: serial@40100000 {
 				compatible = "st,stm32h7-uart";
 				reg = <0x40100000 0x400>;
-				interrupts = <GIC_SPI 126 IRQ_TYPE_LEVEL_HIGH>;
+				interrupts-extended = <&exti1 30 IRQ_TYPE_LEVEL_HIGH>;
 				clocks = <&rcc CK_KER_UART4>;
 				dmas = <&hpdma 15 0x20 0x10012 0x0>,
 				       <&hpdma 16 0x20 0x3021 0x0>;
 				dma-names = "rx", "tx";
 				feature-domains = <&rifsc STM32MP25_RIFSC_UART4_ID>;
 				power-domains = <&CLUSTER_PD>;
+				wakeup-source;
 				status = "disabled";
 			};
 
 			uart5: serial@40110000 {
 				compatible = "st,stm32h7-uart";
 				reg = <0x40110000 0x400>;
-				interrupts = <GIC_SPI 127 IRQ_TYPE_LEVEL_HIGH>;
+				interrupts-extended = <&exti1 31 IRQ_TYPE_LEVEL_HIGH>;
 				clocks = <&rcc CK_KER_UART5>;
 				dmas = <&hpdma 17 0x20 0x10012 0x0>,
 				       <&hpdma 18 0x20 0x3021 0x0>;
 				dma-names = "rx", "tx";
 				feature-domains = <&rifsc STM32MP25_RIFSC_UART5_ID>;
 				power-domains = <&CLUSTER_PD>;
+				wakeup-source;
 				status = "disabled";
 			};
 
@@ -1208,13 +1187,14 @@
 			usart6: serial@40220000 {
 				compatible = "st,stm32h7-uart";
 				reg = <0x40220000 0x400>;
-				interrupts = <GIC_SPI 136 IRQ_TYPE_LEVEL_HIGH>;
+				interrupts-extended = <&exti1 29 IRQ_TYPE_LEVEL_HIGH>;
 				clocks = <&rcc CK_KER_USART6>;
 				dmas = <&hpdma 19 0x20 0x10012 0x0>,
 				       <&hpdma 20 0x20 0x3021 0x0>;
 				dma-names = "rx", "tx";
 				feature-domains = <&rifsc STM32MP25_RIFSC_USART6_ID>;
 				power-domains = <&CLUSTER_PD>;
+				wakeup-source;
 				status = "disabled";
 			};
 
@@ -1489,13 +1469,14 @@
 			uart9: serial@402c0000 {
 				compatible = "st,stm32h7-uart";
 				reg = <0x402c0000 0x400>;
-				interrupts = <GIC_SPI 150 IRQ_TYPE_LEVEL_HIGH>;
+				interrupts-extended = <&exti1 34 IRQ_TYPE_LEVEL_HIGH>;
 				clocks = <&rcc CK_KER_UART9>;
 				dmas = <&hpdma 25 0x20 0x10012 0x0>,
 				       <&hpdma 26 0x20 0x3021 0x0>;
 				dma-names = "rx", "tx";
 				feature-domains = <&rifsc STM32MP25_RIFSC_UART9_ID>;
 				power-domains = <&CLUSTER_PD>;
+				wakeup-source;
 				status = "disabled";
 			};
 
@@ -1536,13 +1517,14 @@
 			usart1: serial@40330000 {
 				compatible = "st,stm32h7-uart";
 				reg = <0x40330000 0x400>;
-				interrupts = <GIC_SPI 114 IRQ_TYPE_LEVEL_HIGH>;
+				interrupts-extended = <&exti1 26 IRQ_TYPE_LEVEL_HIGH>;
 				clocks = <&rcc CK_KER_USART1>;
 				dmas = <&hpdma 9 0x20 0x10012 0x0>,
 				       <&hpdma 10 0x20 0x3021 0x0>;
 				dma-names = "rx", "tx";
 				feature-domains = <&rifsc STM32MP25_RIFSC_USART1_ID>;
 				power-domains = <&CLUSTER_PD>;
+				wakeup-source;
 				status = "disabled";
 			};
 
@@ -1618,26 +1600,28 @@
 			uart7: serial@40370000 {
 				compatible = "st,stm32h7-uart";
 				reg = <0x40370000 0x400>;
-				interrupts = <GIC_SPI 148 IRQ_TYPE_LEVEL_HIGH>;
+				interrupts-extended = <&exti1 32 IRQ_TYPE_LEVEL_HIGH>;
 				clocks = <&rcc CK_KER_UART7>;
 				dmas = <&hpdma 21 0x20 0x10012 0x0>,
 				       <&hpdma 22 0x20 0x3021 0x0>;
 				dma-names = "rx", "tx";
 				feature-domains = <&rifsc STM32MP25_RIFSC_UART7_ID>;
 				power-domains = <&CLUSTER_PD>;
+				wakeup-source;
 				status = "disabled";
 			};
 
 			uart8: serial@40380000 {
 				compatible = "st,stm32h7-uart";
 				reg = <0x40380000 0x400>;
-				interrupts = <GIC_SPI 149 IRQ_TYPE_LEVEL_HIGH>;
+				interrupts-extended = <&exti1 33 IRQ_TYPE_LEVEL_HIGH>;
 				clocks = <&rcc CK_KER_UART8>;
 				dmas = <&hpdma 23 0x20 0x10012 0x0>,
 				       <&hpdma 24 0x20 0x3021 0x0>;
 				dma-names = "rx", "tx";
 				feature-domains = <&rifsc STM32MP25_RIFSC_UART8_ID>;
 				power-domains = <&CLUSTER_PD>;
+				wakeup-source;
 				status = "disabled";
 			};
 
@@ -2089,22 +2073,8 @@
 				status = "disabled";
 			};
 
-			dsi: dsi@48000000 {
-				compatible = "st,stm32-dsi";
-				reg = <0x48000000 0x800>;
-				#clock-cells = <0>;
-				clocks = <&rcc CK_BUS_DSI>, <&rcc CK_KER_DSIPHY>,
-					 <&rcc CK_KER_LTDC>;
-				clock-names = "pclk", "ref", "px_clk";
-				resets = <&rcc DSI_R>;
-				reset-names = "apb";
-				feature-domains = <&rifsc STM32MP25_RIFSC_DSI_CMN_ID>;
-				power-domains = <&CLUSTER_PD>;
-				status = "disabled";
-			};
-
 			ltdc: display-controller@48010000 {
-				compatible = "st,stm32-ltdc";
+				compatible = "st,stm32mp25-ltdc";
 				reg = <0x48010000 0x400>;
 				st,syscon = <&syscfg>;
 				interrupts = <GIC_SPI 158 IRQ_TYPE_LEVEL_HIGH>,
@@ -2152,6 +2122,8 @@
 				st,syscfg = <&syscfg>;
 				feature-domains = <&rifsc STM32MP25_RIFSC_COMBOPHY_ID>;
 				power-domains = <&CLUSTER_PD>;
+				wakeup-source;
+				interrupts-extended = <&exti1 45 IRQ_TYPE_EDGE_FALLING>;
 				status = "disabled";
 			};
 
@@ -2264,16 +2236,19 @@
 				ranges = <0x482e0000 0x482e0000 0x20000>;
 				feature-domains = <&rifsc STM32MP25_RIFSC_USBH_ID>;
 				power-domains = <&CLUSTER_PD>;
+				wakeup-source;
+				interrupts-extended = <&exti1 43 IRQ_TYPE_EDGE_RISING>;
 				status = "disabled";
 
 				usb2h_ohci: usb@482e0000 {
 					compatible = "generic-ohci";
 					reg = <0x482e0000 0x1000>;
-					clocks = <&rcc CK_BUS_USB2OHCI>;
+					clocks = <&usb2_phy1>, <&rcc CK_BUS_USB2OHCI>;
 					resets = <&rcc USB2_R>;
 					interrupts = <GIC_SPI 140 IRQ_TYPE_LEVEL_HIGH>;
 					phys = <&usb2_phy1>;
 					phy-names = "usb";
+					wakeup-source;
 				};
 
 				usb2h_ehci: usb@482f0000 {
@@ -2285,6 +2260,7 @@
 					companion = <&usb2h_ohci>;
 					phys = <&usb2_phy1>;
 					phy-names = "usb";
+					wakeup-source;
 				};
 			};
 
@@ -2296,6 +2272,8 @@
 				ranges = <0x48300000 0x48300000 0x100000>;
 				feature-domains = <&rifsc STM32MP25_RIFSC_USB3DR_ID>;
 				power-domains = <&CLUSTER_PD>;
+				wakeup-source;
+				interrupts-extended = <&exti1 44 IRQ_TYPE_EDGE_RISING>;
 				status = "disabled";
 
 				dwc3: usb@48300000 {
@@ -2308,11 +2286,12 @@
 					resets = <&rcc USB3DR_R>;
 					phys = <&usb2_phy2>;
 					phy-names = "usb2-phy";
+					wakeup-source;
 				};
 			};
 
 			pcie_ep: pcie-ep@48400000 {
-				compatible = "st,stm32mp25-pcie-ep", "snps,dw-pcie-ep";
+				compatible = "st,stm32mp25-pcie-ep";
 				num-lanes = <1>;
 				reg = <0x48400000 0x400000>,
 				      <0x10000000 0x8000000>;
@@ -2330,7 +2309,7 @@
 			};
 
 			pcie_rc: pcie@48400000 {
-				compatible = "st,stm32mp25-pcie-rc", "snps,dw-pcie";
+				compatible = "st,stm32mp25-pcie-rc";
 				device_type = "pci";
 				num-lanes = <1>;
 				reg = <0x48400000 0x400000>,
@@ -2418,82 +2397,93 @@
 			compatible = "st,stm32mp1-exti";
 			interrupt-controller;
 			#interrupt-cells = <2>;
-			#address-cells = <0>;
 			reg = <0x44220000 0x400>;
-
-			exti-interrupt-map {
-				#address-cells = <0>;
-				#interrupt-cells = <2>;
-				interrupt-map-mask = <0xffffffff 0>;
-				interrupt-map =
-					<0  0 &intc 0 0 GIC_SPI 268 IRQ_TYPE_LEVEL_HIGH>,
-					<1  0 &intc 0 0 GIC_SPI 269 IRQ_TYPE_LEVEL_HIGH>,
-					<2  0 &intc 0 0 GIC_SPI 270 IRQ_TYPE_LEVEL_HIGH>,
-					<3  0 &intc 0 0 GIC_SPI 271 IRQ_TYPE_LEVEL_HIGH>,
-					<4  0 &intc 0 0 GIC_SPI 272 IRQ_TYPE_LEVEL_HIGH>,
-					<5  0 &intc 0 0 GIC_SPI 273 IRQ_TYPE_LEVEL_HIGH>,
-					<6  0 &intc 0 0 GIC_SPI 274 IRQ_TYPE_LEVEL_HIGH>,
-					<7  0 &intc 0 0 GIC_SPI 275 IRQ_TYPE_LEVEL_HIGH>,
-					<8  0 &intc 0 0 GIC_SPI 276 IRQ_TYPE_LEVEL_HIGH>,
-					<9  0 &intc 0 0 GIC_SPI 277 IRQ_TYPE_LEVEL_HIGH>,
-					<10 0 &intc 0 0 GIC_SPI 278 IRQ_TYPE_LEVEL_HIGH>,
-					<11 0 &intc 0 0 GIC_SPI 279 IRQ_TYPE_LEVEL_HIGH>,
-					<12 0 &intc 0 0 GIC_SPI 280 IRQ_TYPE_LEVEL_HIGH>,
-					<13 0 &intc 0 0 GIC_SPI 281 IRQ_TYPE_LEVEL_HIGH>,
-					<14 0 &intc 0 0 GIC_SPI 282 IRQ_TYPE_LEVEL_HIGH>,
-					<15 0 &intc 0 0 GIC_SPI 283 IRQ_TYPE_LEVEL_HIGH>,
-					<16 0 &intc 0 0 GIC_SPI 0   IRQ_TYPE_LEVEL_HIGH>,
-					<17 0 &intc 0 0 GIC_SPI 1   IRQ_TYPE_LEVEL_HIGH>,
-					<18 0 &intc 0 0 GIC_SPI 260 IRQ_TYPE_LEVEL_HIGH>,
-					<19 0 &intc 0 0 GIC_SPI 259 IRQ_TYPE_LEVEL_HIGH>,
-					<21 0 &intc 0 0 GIC_SPI 108 IRQ_TYPE_LEVEL_HIGH>,
-					<22 0 &intc 0 0 GIC_SPI 110 IRQ_TYPE_LEVEL_HIGH>,
-					<23 0 &intc 0 0 GIC_SPI 137 IRQ_TYPE_LEVEL_HIGH>,
-					<24 0 &intc 0 0 GIC_SPI 168 IRQ_TYPE_LEVEL_HIGH>,
-					<25 0 &intc 0 0 GIC_SPI 181 IRQ_TYPE_LEVEL_HIGH>,
-					<26 0 &intc 0 0 GIC_SPI 114 IRQ_TYPE_LEVEL_HIGH>,
-					<27 0 &intc 0 0 GIC_SPI 115 IRQ_TYPE_LEVEL_HIGH>,
-					<28 0 &intc 0 0 GIC_SPI 116 IRQ_TYPE_LEVEL_HIGH>,
-					<29 0 &intc 0 0 GIC_SPI 136 IRQ_TYPE_LEVEL_HIGH>,
-					<30 0 &intc 0 0 GIC_SPI 126 IRQ_TYPE_LEVEL_HIGH>,
-					<31 0 &intc 0 0 GIC_SPI 127 IRQ_TYPE_LEVEL_HIGH>,
-					<32 0 &intc 0 0 GIC_SPI 148 IRQ_TYPE_LEVEL_HIGH>,
-					<33 0 &intc 0 0 GIC_SPI 149 IRQ_TYPE_LEVEL_HIGH>,
-					<34 0 &intc 0 0 GIC_SPI 150 IRQ_TYPE_LEVEL_HIGH>,
-					<36 0 &intc 0 0 GIC_SPI 112 IRQ_TYPE_LEVEL_HIGH>,
-					<37 0 &intc 0 0 GIC_SPI 113 IRQ_TYPE_LEVEL_HIGH>,
-					<38 0 &intc 0 0 GIC_SPI 125 IRQ_TYPE_LEVEL_HIGH>,
-					<39 0 &intc 0 0 GIC_SPI 152 IRQ_TYPE_LEVEL_HIGH>,
-					<40 0 &intc 0 0 GIC_SPI 153 IRQ_TYPE_LEVEL_HIGH>,
-					<41 0 &intc 0 0 GIC_SPI 154 IRQ_TYPE_LEVEL_HIGH>,
-					<42 0 &intc 0 0 GIC_SPI 155 IRQ_TYPE_LEVEL_HIGH>,
-					<43 0 &intc 0 0 GIC_SPI 169 IRQ_TYPE_LEVEL_HIGH>,
-					<44 0 &intc 0 0 GIC_SPI 182 IRQ_TYPE_LEVEL_HIGH>,
-					<45 0 &intc 0 0 GIC_SPI 209 IRQ_TYPE_LEVEL_HIGH>,
-					<46 0 &intc 0 0 GIC_SPI 229 IRQ_TYPE_LEVEL_HIGH>,
-					<47 0 &intc 0 0 GIC_SPI 166 IRQ_TYPE_LEVEL_HIGH>,
-					<48 0 &intc 0 0 GIC_SPI 215 IRQ_TYPE_LEVEL_HIGH>,
-					<49 0 &intc 0 0 GIC_SPI 208 IRQ_TYPE_LEVEL_HIGH>,
-					<50 0 &intc 0 0 GIC_SPI 210 IRQ_TYPE_LEVEL_HIGH>,
-					<59 0 &intc 0 0 GIC_SPI 171 IRQ_TYPE_LEVEL_HIGH>,
-					//	<59 0 &intc 0 0 GIC_SPI 172 IRQ_TYPE_LEVEL_HIGH>,
-					<61 0 &intc 0 0 GIC_SPI 173 IRQ_TYPE_LEVEL_HIGH>,
-					//	<61 0 &intc 0 0 GIC_SPI 174 IRQ_TYPE_LEVEL_HIGH>,
-					<64 0 &intc 0 0 GIC_SPI 220 IRQ_TYPE_LEVEL_HIGH>,
-					<67 0 &intc 0 0 GIC_SPI 10  IRQ_TYPE_LEVEL_HIGH>,
-					<68 0 &intc 0 0 GIC_SPI 131 IRQ_TYPE_LEVEL_HIGH>,
-					<70 0 &intc 0 0 GIC_SPI 134 IRQ_TYPE_LEVEL_HIGH>,
-					<72 0 &intc 0 0 GIC_SPI 224 IRQ_TYPE_LEVEL_HIGH>,
-					<73 0 &intc 0 0 GIC_SPI 202 IRQ_TYPE_LEVEL_HIGH>,
-					<74 0 &intc 0 0 GIC_SPI 109 IRQ_TYPE_LEVEL_HIGH>,
-					<75 0 &intc 0 0 GIC_SPI 111 IRQ_TYPE_LEVEL_HIGH>,
-					<76 0 &intc 0 0 GIC_SPI 138 IRQ_TYPE_LEVEL_HIGH>,
-					<77 0 &intc 0 0 GIC_SPI 253 IRQ_TYPE_LEVEL_HIGH>,
-					<78 0 &intc 0 0 GIC_SPI 254 IRQ_TYPE_LEVEL_HIGH>,
-					<79 0 &intc 0 0 GIC_SPI 255 IRQ_TYPE_LEVEL_HIGH>,
-					<83 0 &intc 0 0 GIC_SPI 257 IRQ_TYPE_LEVEL_HIGH>,
-					<84 0 &intc 0 0 GIC_SPI 258 IRQ_TYPE_LEVEL_HIGH>;
-			};
+			interrupts-extended =
+				<&intc GIC_SPI 268 IRQ_TYPE_LEVEL_HIGH>,	/* EXTI_0 */
+				<&intc GIC_SPI 269 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 270 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 271 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 272 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 273 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 274 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 275 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 276 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 277 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 278 IRQ_TYPE_LEVEL_HIGH>,	/* EXTI_10 */
+				<&intc GIC_SPI 279 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 280 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 281 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 282 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 283 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 0   IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 1   IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 260 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 259 IRQ_TYPE_LEVEL_HIGH>,
+				<0>,						/* EXTI_20 */
+				<&intc GIC_SPI 108 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 110 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 137 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 168 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 181 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 114 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 115 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 116 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 136 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 126 IRQ_TYPE_LEVEL_HIGH>,	/* EXTI_30 */
+				<&intc GIC_SPI 127 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 148 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 149 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 150 IRQ_TYPE_LEVEL_HIGH>,
+				<0>,
+				<&intc GIC_SPI 112 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 113 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 125 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 152 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 153 IRQ_TYPE_LEVEL_HIGH>,	/* EXTI_40 */
+				<&intc GIC_SPI 154 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 155 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 169 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 182 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 209 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 229 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 166 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 215 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 208 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 210 IRQ_TYPE_LEVEL_HIGH>,	/* EXTI_50 */
+				<0>,
+				<0>,
+				<0>,
+				<0>,
+				<0>,
+				<0>,
+				<0>,
+				<0>,
+				<&intc GIC_SPI 171 IRQ_TYPE_LEVEL_HIGH>,
+				<0>,						/* EXTI_60 */
+				<&intc GIC_SPI 173 IRQ_TYPE_LEVEL_HIGH>,
+				<0>,
+				<0>,
+				<&intc GIC_SPI 220 IRQ_TYPE_LEVEL_HIGH>,
+				<0>,
+				<0>,
+				<&intc GIC_SPI 10  IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 131 IRQ_TYPE_LEVEL_HIGH>,
+				<0>,
+				<&intc GIC_SPI 134 IRQ_TYPE_LEVEL_HIGH>,	/* EXTI_70 */
+				<0>,
+				<&intc GIC_SPI 224 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 202 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 109 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 111 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 138 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 253 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 254 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 255 IRQ_TYPE_LEVEL_HIGH>,
+				<0>,						/* EXTI_80 */
+				<0>,
+				<0>,
+				<&intc GIC_SPI 257 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 258 IRQ_TYPE_LEVEL_HIGH>;
 		};
 
 		syscfg: syscon@44230000 {
@@ -2715,62 +2705,79 @@
 			compatible = "st,stm32mp1-exti";
 			interrupt-controller;
 			#interrupt-cells = <2>;
-			#address-cells = <0>;
 			reg = <0x46230000 0x400>;
-
-			exti-interrupt-map {
-				#address-cells = <0>;
-				#interrupt-cells = <2>;
-				interrupt-map-mask = <0xffffffff 0>;
-				interrupt-map =
-					<0  0 &intc 0 0 GIC_SPI 17  IRQ_TYPE_LEVEL_HIGH>,
-					<1  0 &intc 0 0 GIC_SPI 18  IRQ_TYPE_LEVEL_HIGH>,
-					<2  0 &intc 0 0 GIC_SPI 19  IRQ_TYPE_LEVEL_HIGH>,
-					<3  0 &intc 0 0 GIC_SPI 20  IRQ_TYPE_LEVEL_HIGH>,
-					<4  0 &intc 0 0 GIC_SPI 21  IRQ_TYPE_LEVEL_HIGH>,
-					<5  0 &intc 0 0 GIC_SPI 22  IRQ_TYPE_LEVEL_HIGH>,
-					<6  0 &intc 0 0 GIC_SPI 23  IRQ_TYPE_LEVEL_HIGH>,
-					<7  0 &intc 0 0 GIC_SPI 24  IRQ_TYPE_LEVEL_HIGH>,
-					<8  0 &intc 0 0 GIC_SPI 25  IRQ_TYPE_LEVEL_HIGH>,
-					<9  0 &intc 0 0 GIC_SPI 26  IRQ_TYPE_LEVEL_HIGH>,
-					<10 0 &intc 0 0 GIC_SPI 27  IRQ_TYPE_LEVEL_HIGH>,
-					<11 0 &intc 0 0 GIC_SPI 28  IRQ_TYPE_LEVEL_HIGH>,
-					<12 0 &intc 0 0 GIC_SPI 29  IRQ_TYPE_LEVEL_HIGH>,
-					<13 0 &intc 0 0 GIC_SPI 30  IRQ_TYPE_LEVEL_HIGH>,
-					<14 0 &intc 0 0 GIC_SPI 31  IRQ_TYPE_LEVEL_HIGH>,
-					<15 0 &intc 0 0 GIC_SPI 32  IRQ_TYPE_LEVEL_HIGH>,
-					<16 0 &intc 0 0 GIC_SPI 12  IRQ_TYPE_LEVEL_HIGH>,
-					<17 0 &intc 0 0 GIC_SPI 13  IRQ_TYPE_LEVEL_HIGH>,
-					<21 0 &intc 0 0 GIC_SPI 14  IRQ_TYPE_LEVEL_HIGH>,
-					<22 0 &intc 0 0 GIC_SPI 15  IRQ_TYPE_LEVEL_HIGH>,
-					<25 0 &intc 0 0 GIC_SPI 212 IRQ_TYPE_LEVEL_HIGH>,
-					<26 0 &intc 0 0 GIC_SPI 151 IRQ_TYPE_LEVEL_HIGH>,
-					<27 0 &intc 0 0 GIC_SPI 156 IRQ_TYPE_LEVEL_HIGH>,
-					<29 0 &intc 0 0 GIC_SPI 216 IRQ_TYPE_LEVEL_HIGH>,
-					<30 0 &intc 0 0 GIC_SPI 217 IRQ_TYPE_LEVEL_HIGH>,
-					<31 0 &intc 0 0 GIC_SPI 218 IRQ_TYPE_LEVEL_HIGH>,
-					<33 0 &intc 0 0 GIC_SPI 207 IRQ_TYPE_LEVEL_HIGH>,
-					<34 0 &intc 0 0 GIC_SPI 175 IRQ_TYPE_LEVEL_HIGH>,
-					//	<34 0 &intc 0 0 GIC_SPI 176 IRQ_TYPE_LEVEL_HIGH>,
-					<37 0 &intc 0 0 GIC_SPI 177 IRQ_TYPE_LEVEL_HIGH>,
-					//	<37 0 &intc 0 0 GIC_SPI 178 IRQ_TYPE_LEVEL_HIGH>,
-					<40 0 &intc 0 0 GIC_SPI 199 IRQ_TYPE_LEVEL_HIGH>,
-					<43 0 &intc 0 0 GIC_SPI 200 IRQ_TYPE_LEVEL_HIGH>,
-					<46 0 &intc 0 0 GIC_SPI 11  IRQ_TYPE_LEVEL_HIGH>,
-					<48 0 &intc 0 0 GIC_SPI 5   IRQ_TYPE_LEVEL_HIGH>,
-					<49 0 &intc 0 0 GIC_SPI 4   IRQ_TYPE_LEVEL_HIGH>,
-					<50 0 &intc 0 0 GIC_SPI 6   IRQ_TYPE_LEVEL_HIGH>,
-					<51 0 &intc 0 0 GIC_SPI 7   IRQ_TYPE_LEVEL_HIGH>,
-					<52 0 &intc 0 0 GIC_SPI 2   IRQ_TYPE_LEVEL_HIGH>,
-					<53 0 &intc 0 0 GIC_SPI 3   IRQ_TYPE_LEVEL_HIGH>,
-					<61 0 &intc 0 0 GIC_SPI 221 IRQ_TYPE_LEVEL_HIGH>,
-					<62 0 &intc 0 0 GIC_SPI 246 IRQ_TYPE_LEVEL_HIGH>,
-					<64 0 &intc 0 0 GIC_SPI 247 IRQ_TYPE_LEVEL_HIGH>,
-					<65 0 &intc 0 0 GIC_SPI 248 IRQ_TYPE_LEVEL_HIGH>,
-					<66 0 &intc 0 0 GIC_SPI 249 IRQ_TYPE_LEVEL_HIGH>,
-					<67 0 &intc 0 0 GIC_SPI 256 IRQ_TYPE_LEVEL_HIGH>,
-					<70 0 &intc 0 0 GIC_SPI 213 IRQ_TYPE_LEVEL_HIGH>;
-			};
+			interrupts-extended =
+				<&intc GIC_SPI 17  IRQ_TYPE_LEVEL_HIGH>,	/* EXTI_0 */
+				<&intc GIC_SPI 18  IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 19  IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 20  IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 21  IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 22  IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 23  IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 24  IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 25  IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 26  IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 27  IRQ_TYPE_LEVEL_HIGH>,	/* EXTI_10 */
+				<&intc GIC_SPI 28  IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 29  IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 30  IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 31  IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 32  IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 12  IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 13  IRQ_TYPE_LEVEL_HIGH>,
+				<0>,
+				<0>,
+				<0>,						/* EXTI_20 */
+				<&intc GIC_SPI 14  IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 15  IRQ_TYPE_LEVEL_HIGH>,
+				<0>,
+				<0>,
+				<&intc GIC_SPI 212 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 151 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 156 IRQ_TYPE_LEVEL_HIGH>,
+				<0>,
+				<&intc GIC_SPI 216 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 217 IRQ_TYPE_LEVEL_HIGH>,	/* EXTI_30 */
+				<&intc GIC_SPI 218 IRQ_TYPE_LEVEL_HIGH>,
+				<0>,
+				<&intc GIC_SPI 207 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 175 IRQ_TYPE_LEVEL_HIGH>,
+				<0>,
+				<0>,
+				<&intc GIC_SPI 177 IRQ_TYPE_LEVEL_HIGH>,
+				<0>,
+				<0>,
+				<&intc GIC_SPI 199 IRQ_TYPE_LEVEL_HIGH>,	/* EXTI_40 */
+				<0>,
+				<0>,
+				<&intc GIC_SPI 200 IRQ_TYPE_LEVEL_HIGH>,
+				<0>,
+				<0>,
+				<&intc GIC_SPI 11  IRQ_TYPE_LEVEL_HIGH>,
+				<0>,
+				<&intc GIC_SPI 5   IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 4   IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 6   IRQ_TYPE_LEVEL_HIGH>,	/* EXTI_50 */
+				<&intc GIC_SPI 7   IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 2   IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 3   IRQ_TYPE_LEVEL_HIGH>,
+				<0>,
+				<0>,
+				<0>,
+				<0>,
+				<0>,
+				<0>,
+				<0>,						/* EXTI_60 */
+				<&intc GIC_SPI 221 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 246 IRQ_TYPE_LEVEL_HIGH>,
+				<0>,
+				<&intc GIC_SPI 247 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 248 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 249 IRQ_TYPE_LEVEL_HIGH>,
+				<&intc GIC_SPI 256 IRQ_TYPE_LEVEL_HIGH>,
+				<0>,
+				<0>,
+				<&intc GIC_SPI 213 IRQ_TYPE_LEVEL_HIGH>;	/* EXTI_70 */
 		};
 
 		fmc: memory-controller@48200000 {
@@ -2816,6 +2823,13 @@
 		a35ss_syscfg: syscon@48802000  {
 			compatible = "st,stm32mp25-a35ss-syscfg", "syscon";
 			reg = <0x48802000 0xac>;
+			status = "disabled";
+		};
+
+		hdp: pinctrl@54090000 {
+			compatible = "st,stm32mp-hdp";
+			reg = <0x54090000 0x400>;
+			clocks = <&rcc CK_BUS_HDP>;
 			status = "disabled";
 		};
 	};

@@ -64,6 +64,14 @@
 			gpios = <&gpiod 2 GPIO_ACTIVE_HIGH>;
 			status = "okay";
 		};
+
+		button-wake-up {
+			label = "wake-up";
+			linux,code = <KEY_WAKEUP>;
+			interrupts-extended = <&optee 0>;
+			wakeup-source;
+			status = "okay";
+		};
 	};
 
 	gpio-leds {
@@ -152,6 +160,7 @@
 &combophy {
 	clocks = <&rcc CK_BUS_USB3PCIEPHY>, <&rcc CK_KER_USB3PCIEPHY>, <&pad_clk>;
 	clock-names = "apb-clk", "ker-clk", "pad-clk";
+	st,rx_equalizer = <1>;
 	status = "okay";
 };
 
@@ -164,6 +173,8 @@
 };
 
 &csi2host {
+	vdd-supply =  <&scmi_vddcore>;
+	vdda18-supply = <&scmi_v1v8>;
 	status = "okay";
 	ports {
 		#address-cells = <1>;
@@ -196,7 +207,7 @@
 };
 
 &dsi {
-	phy-dsi-supply =  <&scmi_vddcore>;
+	vdd-supply =  <&scmi_vddcore>;
 	vdda18-supply = <&scmi_v1v8>;
 	status = "disabled";
 
@@ -400,14 +411,6 @@
 	status = "okay";
 };
 
-/* use LPTIMER with tick broadcast for suspend mode */
-&lptimer3 {
-	status = "okay";
-	timer {
-		status = "okay";
-	};
-};
-
 &ltdc {
 	default-on;
 	rotation-memory = <&ltdc_sec_rotation>;
@@ -558,6 +561,8 @@
 	pinctrl-1 = <&pcie_init_pins_a>;
 	pinctrl-2 = <&pcie_sleep_pins_a>;
 	reset-gpios = <&gpioj 8 GPIO_ACTIVE_LOW>;
+	wakeup-source;
+	wake-gpios = <&gpioh 5 GPIO_ACTIVE_LOW>;
 	status = "okay";
 };
 
@@ -699,6 +704,17 @@
 
 &usb2h {
 	status = "okay";
+
+	usb2h_ehci: usb@482f0000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		/* onboard HUB */
+		hub@1 {
+			compatible = "usb424,2514";
+			reg = <1>;
+			vdd-supply = <&scmi_v3v3>;
+		};
+	};
 
 	usb2h_ohci: usb@482e0000 {
 		status = "disabled";
