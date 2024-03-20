@@ -104,3 +104,10 @@ void stm32mp_misc_init(void);
 
 /* helper function: read data from OTP */
 u32 get_otp(int index, int shift, int mask);
+
+/* helper function: check "closed" state in product "Life Cycle" */
+#ifdef CONFIG_CMD_STM32KEY
+bool stm32mp_is_closed(void);
+#else
+static inline bool stm32mp_is_closed(void) { return false; }
+#endif
