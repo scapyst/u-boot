@@ -25,6 +25,7 @@
 		ethernet1 = &eth1;
 		serial0 = &usart2;
 		serial1 = &usart6;
+		serial2 = &lpuart1;
 	};
 
 	chosen {
@@ -39,6 +40,12 @@
 				 <&rcc CK_BUS_LVDS>, <&rcc CK_KER_LVDSPHY>;
 			status = "disabled";
 		};
+	};
+
+	cec_clock: cec-clock {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <12000000>;
 	};
 
 	clocks {
@@ -62,6 +69,13 @@
 			label = "User-1";
 			linux,code = <BTN_1>;
 			gpios = <&gpiod 2 GPIO_ACTIVE_HIGH>;
+			status = "okay";
+		};
+
+		button-user-2 {
+			label = "User-2";
+			linux,code = <BTN_2>;
+			gpios = <&gpiog 8 GPIO_ACTIVE_HIGH>;
 			status = "okay";
 		};
 
@@ -93,7 +107,7 @@
 
 		port {
 			hdmi_connector_in: endpoint {
-				remote-endpoint = <&adv7535_out>;
+				remote-endpoint = <&adv753x_out>;
 			};
 		};
 	};
@@ -172,6 +186,62 @@
 	status = "okay";
 };
 
+&cs_cpu_debug0 {
+	status = "okay";
+};
+
+&cs_cpu_debug1 {
+	status = "okay";
+};
+
+&cs_cti0 {
+	status = "okay";
+};
+
+&cs_cti1 {
+	status = "okay";
+};
+
+&cs_cti_cpu0 {
+	status = "okay";
+};
+
+&cs_cti_cpu1 {
+	status = "okay";
+};
+
+&cs_etf {
+	status = "okay";
+};
+
+&cs_etm0 {
+	status = "okay";
+};
+
+&cs_etm1 {
+	status = "okay";
+};
+
+&cs_etr {
+	status = "okay";
+};
+
+&cs_funnel {
+	status = "okay";
+};
+
+&cs_replicator {
+	status = "okay";
+};
+
+&cs_stm {
+	status = "okay";
+};
+
+&cs_tpiu {
+	status = "okay";
+};
+
 &csi2host {
 	vdd-supply =  <&scmi_vddcore>;
 	vdda18-supply = <&scmi_v1v8>;
@@ -225,7 +295,7 @@
 		port@1 {
 			reg = <1>;
 			dsi_out1: endpoint {
-				remote-endpoint = <&adv7535_in>;
+				remote-endpoint = <&adv753x_in>;
 			};
 		};
 	};
@@ -240,6 +310,7 @@
 	max-speed = <1000>;
 	phy-handle = <&phy1_eth1>;
 	st,eth-clk-sel;
+	snps,ext-systime;
 
 	mdio1 {
 		#address-cells = <1>;
@@ -328,10 +399,18 @@
 		};
 	};
 
-	adv7535: hdmi@3d {
-		compatible = "adi,adv7535";
+	adv753x: hdmi@3d {
+		/*
+		 * With MB1232 board, use "adi,adv7533" (1080p30)
+		 * With MB1752 board, use "adi,adv7535" (1080p60)
+		 */
+		compatible = "adi,adv7533";
 		reg = <0x3d>, <0x3c>, <0x3f>, <0x38>;
 		reg-names = "main", "cec", "edid", "packet";
+		clocks = <&cec_clock>;
+		clock-names = "cec";
+		interrupt-parent = <&gpiod>;
+		interrupts = <10 IRQ_TYPE_EDGE_FALLING>;
 		status = "disabled";
 		adi,dsi-lanes = <4>;
 		reset-gpios = <&gpiog 14 GPIO_ACTIVE_LOW>;
@@ -348,21 +427,21 @@
 
 			port@0 {
 				reg = <0>;
-				adv7535_in: endpoint {
+				adv753x_in: endpoint {
 					remote-endpoint = <&dsi_out1>;
 				};
 			};
 
 			port@1 {
 				reg = <1>;
-				adv7535_out: endpoint {
+				adv753x_out: endpoint {
 					remote-endpoint = <&hdmi_connector_in>;
 				};
 			};
 
 			port@2 {
 				reg = <2>;
-				adv7535_tx_endpoint: endpoint {
+				adv753x_tx_endpoint: endpoint {
 					remote-endpoint = <&i2s2_endpoint>;
 				};
 			};
@@ -400,7 +479,7 @@
 
 	i2s2_port: port {
 		i2s2_endpoint: endpoint {
-			remote-endpoint = <&adv7535_tx_endpoint>;
+			remote-endpoint = <&adv753x_tx_endpoint>;
 			format = "i2s";
 			mclk-fs = <256>;
 		};
@@ -409,6 +488,18 @@
 
 &ipcc1 {
 	status = "okay";
+};
+
+&lpuart1 {
+	pinctrl-names = "default", "idle", "sleep";
+	pinctrl-0 = <&lpuart1_pins_a>;
+	pinctrl-1 = <&lpuart1_idle_pins_a>;
+	pinctrl-2 = <&lpuart1_sleep_pins_a>;
+	/delete-property/dmas;
+	/delete-property/dma-names;
+	wakeup-source;
+	uart-has-rtscts;
+	status = "disabled";
 };
 
 &ltdc {
@@ -463,7 +554,8 @@
 	mbox-names = "vq0", "vq1", "shutdown";
 	memory-region = <&cm33_cube_fw>, <&cm33_cube_data>,
 			<&ipc_shmem_1>, <&vdev0vring0>,
-			<&vdev0vring1>, <&vdev0buffer>;
+			<&vdev0vring1>, <&vdev0buffer>,
+			<&cm33_sram2>;
 	st,syscfg-nsvtor = <&a35ss_syscfg 0xa8 0xffffff80>;
 	status = "okay";
 };
@@ -521,14 +613,12 @@
 	memory-region = <&mm_ospi1>;
 	memory-region-names = "mm_ospi1";
 	pinctrl-names = "default", "sleep";
-	pinctrl-0 = <&ospi1_clk_pins_a
-		     &ospi1_io03_pins_a
-		     &ospi1_cs0_pins_a>;
-
-	pinctrl-1 = <&ospi1_clk_sleep_pins_a
-		     &ospi1_io03_sleep_pins_a
-		     &ospi1_cs0_sleep_pins_a>;
-
+	pinctrl-0 = <&ospi_port1_clk_pins_a
+		     &ospi_port1_io03_pins_a
+		     &ospi_port1_cs0_pins_a>;
+	pinctrl-1 = <&ospi_port1_clk_sleep_pins_a
+		     &ospi_port1_io03_sleep_pins_a
+		     &ospi_port1_cs0_sleep_pins_a>;
 	status = "okay";
 
 	spi@40430000 {
@@ -562,7 +652,7 @@
 	pinctrl-2 = <&pcie_sleep_pins_a>;
 	reset-gpios = <&gpioj 8 GPIO_ACTIVE_LOW>;
 	wakeup-source;
-	wake-gpios = <&gpioh 5 GPIO_ACTIVE_LOW>;
+	wake-gpios = <&gpioh 5 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
 	status = "okay";
 };
 
@@ -702,10 +792,10 @@
 	status = "okay";
 };
 
-&usb2h {
+&usbh {
 	status = "okay";
 
-	usb2h_ehci: usb@482f0000 {
+	usbh_ehci: usb@482f0000 {
 		#address-cells = <1>;
 		#size-cells = <0>;
 		/* onboard HUB */
@@ -716,7 +806,7 @@
 		};
 	};
 
-	usb2h_ohci: usb@482e0000 {
+	usbh_ohci: usb@482e0000 {
 		status = "disabled";
 	};
 };

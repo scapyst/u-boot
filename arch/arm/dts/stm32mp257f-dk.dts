@@ -80,6 +80,13 @@
 	gpio-keys {
 		compatible = "gpio-keys";
 
+		button-user-1 {
+			label = "User-1";
+			linux,code = <BTN_1>;
+			gpios = <&gpioc 5 GPIO_ACTIVE_HIGH>;
+			status = "okay";
+		};
+
 		button-user-2 {
 			label = "User-2";
 			linux,code = <BTN_2>;
@@ -185,6 +192,19 @@
 	status = "okay";
 };
 
+&combophy {
+	st,ssc-on;
+	status = "okay";
+};
+
+&crc {
+	status = "okay";
+};
+
+&cryp1 {
+	status = "okay";
+};
+
 &csi2host {
 	vdd-supply =  <&scmi_vddcore>;
 	vdda18-supply = <&scmi_v1v8>;
@@ -207,14 +227,6 @@
 			};
 		};
 	};
-};
-
-&crc {
-	status = "okay";
-};
-
-&cryp1 {
-	status = "okay";
 };
 
 &dcmipp {
@@ -459,7 +471,8 @@
 	mbox-names = "vq0", "vq1", "shutdown";
 	memory-region = <&cm33_cube_fw>, <&cm33_cube_data>,
 			<&ipc_shmem_1>, <&vdev0vring0>,
-			<&vdev0vring1>, <&vdev0buffer>;
+			<&vdev0vring1>, <&vdev0buffer>,
+			<&cm33_sram2>;
 	st,syscfg-nsvtor = <&a35ss_syscfg 0xa8 0xffffff80>;
 	status = "okay";
 };
@@ -470,7 +483,7 @@
 	pinctrl-1 = <&mdf_cck0_sleep_pins_a>;
 	#clock-cells = <0>;
 	clock-output-names = "cck0";
-	clock-frequency = <2048000>;
+	clock-frequency = <1536000>;
 	status = "okay";
 
 	sitf6: sitf@380 {
@@ -483,7 +496,7 @@
 	};
 
 	filter0: filter@84  {
-		st,cic-mode = <5>;
+		st,cic-mode = <4>;
 		st,sitf = <&sitf6 0>;
 		st,hpf-filter-cutoff-bp = <625>;
 		status = "okay";
@@ -504,7 +517,7 @@
 	};
 
 	filter1: filter@104  {
-		st,cic-mode = <5>;
+		st,cic-mode = <4>;
 		st,sitf = <&sitf6 1>;
 		st,hpf-filter-cutoff-bp = <625>;
 		status = "okay";
@@ -546,6 +559,16 @@
 			reg = <0x35>;
 			interrupts-extended = <&intc_rpmsg 0>;
 			status = "okay";
+			connector {
+				compatible = "usb-c-connector";
+				label = "USB-C";
+
+				port {
+					typec_ep: endpoint {
+						remote-endpoint = <&dwc3_ep>;
+					};
+				};
+			};
 		};
 	};
 };
@@ -701,10 +724,10 @@
 	status = "okay";
 };
 
-&usb2h {
+&usbh {
 	status = "okay";
 
-	usb2h_ohci: usb@482e0000 {
+	usbh_ohci: usb@482e0000 {
 		status = "disabled";
 	};
 };
@@ -713,8 +736,13 @@
 	status = "okay";
 
 	dwc3: usb@48300000 {
-		maximum-speed = "high-speed";
-		role-switch-default-mode = "peripheral";
+		phys            = <&usb2_phy2>, <&combophy PHY_TYPE_USB3>;
+		phy-names       = "usb2-phy", "usb3-phy";
 		usb-role-switch;
+		port {
+			dwc3_ep: endpoint {
+				remote-endpoint = <&typec_ep>;
+			};
+		};
 	};
 };
