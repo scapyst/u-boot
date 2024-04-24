@@ -29,6 +29,10 @@
 	/delete-node/ typec@35;
 };
 
+&sdmmc3 {
+	status = "disabled";
+};
+
 &usart2 {
 	u-boot,dm-pre-reloc;
 };
